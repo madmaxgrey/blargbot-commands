@@ -8,6 +8,24 @@
 {if;{get;_killswitch};==;engage;
 {return}}
 
+{//;function to make requests using scrapingant}
+{function;ant;
+{if;{length;{paramsarray}};>=;2;
+{set;!~usrhead;{params;1}}
+}
+{foreach;~header;{jkeys;~usrhead;headers};
+{jset;~anthead;headers.Ant-{get;~header};{jget;~usrhead;headers.{get;~header}};c}
+}
+{if;{jget;~usrhead;method};==;{null};
+{jset;~anthead;method;GET;c};
+{jset;~anthead;method;{jget;~usrhead;method};c}
+}
+{if;{length;{paramsarray}};>=;3;
+{set;!~antbody;{params;2;n}}
+}
+{request;https://api.scrapingant.com/v2/general?x-api-key={randchoose;{jget;@ant}}&browser={flagset;b}&url={uriencode;{params;0}};{get;~anthead};{get;~antbody}}
+}
+
 {//;function to get info for a channel from discord's API}
 {function;chaninfo;{fallback;{channelid}}{jget;{request;https://discord.com/api/channels/{if;{params;0};==;{null};{channelid};{channelid;{params;0}}};{get;@bot.sh.get}};body}{fallback}}
 
@@ -75,23 +93,16 @@ timestamp:{time}}}}
 }
 
 {//;function to output a fake image}
-{function;fakeimg;https://fakeimg.pl/{if;{params;1};!=;{null};{params;1};250}x{if;{params;2};!=;{null};{params;2};100}/2A2D30/?retina=1&text={params;0}&font=noto}
+{function;fakeimg;https://fakeimg.pl/{if;{params;1};!=;{null};{params;1};250}x{if;{params;2};!=;{null};{params;2};100}/2A2D30/?retina=1&text={uriencode;{params;0}}&font=noto}
 
 {//;function to get json from website using motyar}
-{function;getjson;{jset;~head;headers.x-api-key;{get;@scrapingant};c}{jget;{request;https://api.scrapingant.com/v1/general?url={uriencode;{params;0}}&browser=false&return_text=false;{get;~head}};body.content}}
+{function;getjson;{jset;~head;headers.x-api-key;{randchoose;{jget;@ant}};c}{jget;{request;https://api.scrapingant.com/v1/general?url={uriencode;{params;0}}&browser=false&return_text=false;{get;~head}};body.content}}
 
 {//;function to turn HTML into markdown using pandoc}
 {function;htmltomd;{set;!~syretia.body;{params;0}}{func.syretia;pandoc?t=markdown_strict&f=html}}
 
 {//;function to upload images to imagekit}
-{function;imagekit;
-{regexreplace;
-{jset;~syretia.body;key;{get;@imagekit};c}
-{jset;~syretia.body;url;{params};c}
-{jset;~syretia.body;name;{reverse;{jget;{split;{reverse;{jget;{split;{params};?};0}};/};0}};c}
-{jget;{func.syretia;imagekit};url}
-;/(\r|\n)/g;}
-}
+{function;imagekit;{jget;{func.getjson;https://api.imgbb.com/1/upload?key={if;{guildid};==;96230004047740928;{get;@dl.imgbb.key};{get;@imgbb.key}}&name={uriencode;{userid}-{time;X}}&image={uriencode;{params}}};data.url}}
 
 {//;function to get TTS audio from lazypy.ro}
 {function;lazypy;
@@ -104,7 +115,10 @@ timestamp:{time}}}}
 {//;function to output linux tux hacker gif}
 {function;linuxhacker;https://cdn.discordapp.com/emojis/478073442311077889.gif?size=20}
 
-{//;function to get metadata using motyar}
+{//;function to evaluate expressions using mathjs}
+{function;mathjs;{jget;{request;http://api.mathjs.org/v4/?expr={uriencode;{params;0}}&precision={if;{get;~precision};==;{null};10;{get;~precision}}};body}}
+
+{//;function to reformat metadata using from syretia.xyz}
 {function;metadata;
 {foreach;~mde;{func.syretia;metadata?u={uriencode;{params;0}}};
 {if;{jget;~mde;name};!=;{null};
@@ -117,14 +131,11 @@ timestamp:{time}}}}
 {func.syretia;metadata?u={uriencode;{params;0}}}
 }
 
-{//;function to scrape sites using motyar}
-{function;motyar;{set;!~motyarjson;{request;http://motyar.info/webscrapemaster/api?key={get;*motyarkey}&url={uriencode;{params;0}}&xpath={params;1}}}{if;{jget;~motyarjson;body.error.0};==;pass an valid API key;{set;*motyarkey;{jget;{split;{jget;{split;{func.rawhtml;https://ipinfo.io/{randchoose;["1.1.1.1","8.8.8.8"]}/geo};value="};1};"};0}}{set;!~motyarjson;{request;http://motyar.info/webscrapemaster/api?key={get;*motyarkey}&url={uriencode;{params;0}}&xpath={params;1}}}}{get;~motyarjson}}
-
 {//;function to detect if correct prefix was used}
 {function;prefixtest;
 {switch;{guildid};
 ["96230004047740928","204061452707954688"];
-{set;!~used.prefix;{jget;{regexmatch;{replace;{messagetext};./{space};};/^(\.\/|bak\s|sudo\s|su\s|<)/i};0}}
+{set;!~used.prefix;{jget;{regexmatch;{replace;{messagetext};./{space};};/^(\.\/|bk\s|sb\s|bak\s|sudo\s|su\s|<)/i};0}}
 {if;{get;~used.prefix};==;{null};
 {return}}}
 }
@@ -140,21 +151,35 @@ timestamp:{time}}}}
 
 {//;function that replicates built-in request, but through syretia.xyz}
 {function;req;
-{if;{get;~req.raw};!=;true;
-{set;!~req.raw;false}}
-{set;!~url;{params;0}}
-{if;{logic;||;{bool;{get;~url};==;{null}};{bool;{get;~url};startswith;`}};{throw;Missing required arguments {get;~url}}{return}}
-{set;!~headers;{params;1}}
-{if;{get;~headers};startswith;`;
-{set;!~headers;}}
-{set;!~method;{jget;~headers;method}}
-{if;{logic;||;{bool;{get;~method};==;{null}};{bool;{get;~method};startswith;`}};
-{set;!~method;GET}}
-{jset;~headers;method;POST;c}
-{set;!~body;{params;2;n}}
-{if;{get;~body};startswith;`;
-{set;!~body;}}
-{jget;{request;https://syretia.xyz/req?url={uriencode;{get;~url}}&x={get;~method}&raw={get;~req.raw}&f={get;~req.flags};{get;~headers};{get;~body}};body}
+{//;head for request}
+{if;{jget;{params;1};method};!=;{null};
+  {set;!~nuhead;{jget;{params;1}}};
+  {jset;~nuhead;method;GET;c}
+}
+{if;{jget;~nuhead;headers};==;{null};
+  {jset;~nuhead;headers.user-agent;blargbot (blargbot.xyz);c}
+}
+
+{//;setup headers aray}
+{set;!~headers;[]}
+{foreach;~key;{jkeys;~nuhead;headers};
+  {if;{lower;{get;~key}};!=;x-authorization;
+    {push;~headers;{get;~key};{jget;~nuhead;headers.{get;~key}}}
+  }
+}
+{jset;~nuhead;headers.x-headers;{uriencode;{jget;~headers}};c}
+
+{//;request}
+{if;{length;{paramsarray}};>;2;
+  {set;!~nureq;{request;https://syretia.xyz/api/v1/req?url={uriencode;{params;0}};{jget;~nuhead};{params;2;n}}};
+  {set;!~nureq;{request;https://syretia.xyz/api/v1/req?url={uriencode;{params;0}};{jget;~nuhead}}}
+}
+
+{//;check status}
+{if;{jget;~nureq;status};!=;200;
+  {jset;~nureq;body;{get;~nureq};c}
+}
+{jget;~nureq;body}
 }
 
 {//;function to interact with firebase}

@@ -2,110 +2,104 @@
 {inject;{get;_gitcmd.functions}}
 
 {//;help function}
-{function;help;{embed;{embedbuild;
+{function;help;{set;!~sehelp;{embedbuild;
+author.name:{guildname};
+author.icon_url:{guildicon};
 title:Help for se;
-color:{func.dlcolors;yellow};
-description:**__Usage:__** `se [arg] <search term>`
-Search the web using Qwant or use one of the arguments listed below to perform a specific search.
-If none of the arguments below are used, a normal search will be ran.
+color:{func.dlcolors;brightyellow};
+description:Searches the web and returns results.
 
-**Available arguments**:
-```
-• abs
-  tldp Advanced Bash Scripting search
-• aw
-  Arch wiki Search
-• bbg
-  tldp Bash Beginners Guide search
-• define or def
-  Dictionary search
-• dw
-  Debian wiki search
-• fw
-  Fedora wiki search
-• game or games
-  MobyGames search
-• gw
-  Gentoo wiki search
-• lsst
-  Linux Shell Scripting Tutorial
-• osd
-  openSUSE docs search
-• osw
-  openSUSE wiki search
-• steam or proton
-  Steam Play compatability search
-• uw
-  Ubuntu wiki search
-• wiki or wikipedia
-  Wikipedia search
-• youtube or yt
-  Youtube search
-```
-;}}}
+__**Arguments**__:;
+fields.name:{prefix}se abs <query>;
+fields.value:tldp Advanced Bash Scripting search for `query`.;
+fields.inline:false;
+fields.name:{prefix}se aw <query>;
+fields.value:Arch Wiki earch for `query`.;
+fields.inline:false;
+fields.name:{prefix}se bbg <query>;
+fields.value:tldp Bash Beginners Guide search for `query`.;
+fields.inline:false;
+fields.name:{prefix}se def <query>;
+fields.value:Dictionary search for `query`.;
+fields.inline:false;
+fields.name:{prefix}se dw <query>;
+fields.value:Debian wiki search for `query`.;
+fields.inline:false;
+fields.name:{prefix}se fw <query>;
+fields.value:Fedora wiki search for `query`.;
+fields.inline:false;
+fields.name:{prefix}se game <query>;
+fields.value:MobyGames search for `query`.;
+fields.inline:false;
+fields.name:{prefix}se gw <query>;
+fields.value:Gentoo wiki search for `query`.;
+fields.inline:false;
+fields.name:{prefix}se lsst <query>;
+fields.value:Linux Shell Scripting Tutorial search for `query`.;
+fields.inline:false;
+fields.name:{prefix}se osd <query>;
+fields.value:openSUSE docs search for `query`.;
+fields.inline:false;
+fields.name:{prefix}se osw <query>;
+fields.value:openSUSE wiki search for `query`.;
+fields.inline:false;
+fields.name:{prefix}se steam <query>;
+fields.value:Steam Play compatability search for `query`.;
+fields.inline:false;
+fields.name:{prefix}se uw <query>;
+fields.value:Ubuntu wiki search for `query`.;
+fields.inline:false;
+fields.name:{prefix}se yt <query>;
+fields.value:Youtube search for `query`.;
+fields.inline:false;
+}}
+{//;only output json if commandname is help}
+{if;{commandname};==;help;
+{jget;~sehelp};
+{embed;{jget;~sehelp}}
+}
+}
 
-{//;function to search Qwant}
-{function;qse;
+{//;function to search ddg}
+{function;ddgse;
 {//;set searchmsg color and message}
-{if;{get;~qsecolor};==;{null};
+{if;{get;~ddgsecolor};==;{null};
 {jset;~qjson;color;{func.dlcolors;blurple};c};
-{jset;~qjson;color;{get;~qsecolor};c}}
-{jset;~qjson;message;Searching Qwant for `{params}`;c}
+{jset;~qjson;color;{get;~ddgsecolor};c}
+}
+{jset;~qjson;message;Searching ddg for `{params}`;c}
 {//;output message to let users know we're doing something}
 {func.searchmsg;{get;~qjson}}
-{//;get qwant results}
-{//;{set;!~qresults;{func.syretia;qse?q={uriencode;{params}}}}}
-{set;!~rawresults;{jget;{func.getjson;https://api.qwant.com/v3/search/web?count=10&q={uriencode;{params}}&t=web&locale=en_US&device=desktop&offset=0&safesearch=1};data.result.items.mainline}}
-{set;!~qresults;{filter;~res;{jget;~rawresults};{bool;{jget;~res;type};==;web}}}
+{//;get ddg results}
+
+{set;!~rawresults;{jget;{base64decode;{jget;{request;https://api.duckduckgo.com/?q={uriencode;! {params}}&format=json&pretty=1&no_html=1&skip_disambig=1&no_redirect=1};body}};Redirect}}
+{//;set results to null if includes api.duckduckgo}
+{if;{get;~rawresults};startswith;https://api.duckduckgo;
+{set;!~ddgresult;{null}};
+{set;!~ddgresult;{get;~rawresults}}
+}
+
 {//;check results}
-{if;{length;{get;~qresults}};==;0;
+{if;{get;~ddgresult};==;{null};
 {//;no results}
-{set;!~qurl;https://www.qwant.com/?q={uriencode;{params}}&t=web}
-{set;!~qtitle;No results for '{params}'.}
-{set;!~qcolor;{func.dlcolors;red}}
-{set;!~qthumb;{func.fakeimg;No results;250;100}}
-{set;!~qdesc;No results for `{params}`.
-> https://www.qwant.com/?q={uriencode;{params}}&t=web};
-{//;results found}
-{set;!~qurl;{jget;~qresults;0.items.0.url}}
-{set;!~qtitle;{jget;~qresults;0.items.0.title}}
-{if;{jget;~qresults;0.count};>;1;
-{set;!~qnext;{jget;~qresults;0.items.1.url}};
-{if;{length;{get;~qresults}};>;1;
-{set;!~qnext;{jget;~qresults;1.items.0.url}}}
-}
-{set;!~qdesc;{jget;~qresults;0.items.0.desc}
-{get;~qurl}
-{if;{get;~qnext};!=;{null};Next Result:{newline}*{get;~qnext}*}}
-{//;get metadata for color and thumbnail}
-{set;!~qmeta;{func.metadata;{get;~qurl}}}
-{fallback;}
-{if;{get;~qsecolor};!=;{null};
-{set;!~qcolor;{get;~qsecolor}};
-{if;{jget;~qmeta;meta.theme-color};!=;{null};
-{set;!~qcolor;{jget;~qmeta;meta.theme-color}};
-{set;!~qcolor;{func.dlcolors;blurple}}}}
-{if;{jget;~qmeta;meta.og:image};!=;{null};
-{set;!~qthumb;{jget;~qmeta;meta.og:image}};
-{set;!~qthumb;{func.fakeimg;null;1;1}}}
-{fallback}
-}
-{//;check if qthumb is valid url}
-{if;{get;~qthumb};startswith;/;
-{set;!~qdomain;{join;{slice;{split;{get;~qurl};/};0;3};/}}
-{set;!~qthumb;{get;~qdomain}{get;~qthumb}}
-}
-{//;output results}
+{//;output no results and return}
 {edit;{channelid};{get;~searchmsg};_delete;{embedbuild;
-author.name:Result via Qwant;
-author.icon_url:https://play-lh.googleusercontent.com/gZM93E0coPblwJysaGbAVgTRXPld0ZDRtrbmclDqWWrPJLKIjyVB9XKqOX8OM9_3GJI;
-author.url:https://www.qwant.com/?q={uriencode;{params}}&t=web;
-title:{get;~qtitle};
-url:{get;~qurl};
-color:{get;~qcolor};
-thumbnail.url:{get;~qthumb};
-description:{get;~qdesc};
+author.name:Result via ddg;
+author.icon_url:https://cdn.discordapp.com/emojis/496122815578374147.png;
+author.url:https://duckduckgo.com/?q={uriencode;{params}};
+title:No results for '{params}'.;
+url:https://duckduckgo.com/?q={uriencode;{params}};
+color:{func.dlcolors;red};
+description:No results for `{params}`.
+> https://duckduckgo.com/?q={uriencode;{params}};
 }}
+{return;false}
+}
+
+
+{//;output result}
+{edit;{channelid};{get;~searchmsg};{get;~ddgresult};_delete}
+
 }
 
 {//;function to search urban dictionary}
@@ -198,13 +192,11 @@ footer.text:Powered by Datamuse.com;}}
 {edit;{channelid};{get;~searchmsg};_delete;{embedbuild;
 color:{func.dlcolors;red};
 description:'{params}' not found.}};
-{//;steamspy}
-{set;!~steam;{jget;{request;https://steamspy.com/api.php?request=appdetails&appid={get;~id}};body}}
 {//;protondb}
 {set;!~pjson;{request;https://www.protondb.com/api/v1/reports/summaries/{get;~id}.json}}
 {//;steam API}
-{set;!~steamjson;{request;http://store.steampowered.com/api/appdetails?appids={get;~id}&l=English}}
-{set;!~desc;{substring;{jget;~steamjson;body.{get;~id}.data.short_description};0;300}}
+{set;!~steamjson;{request;http://store.steampowered.com/api/appdetails?appids={get;~id}&l=English&cc=us}}
+{set;!~desc;{substring;{htmldecode;{jget;~steamjson;body.{get;~id}.data.short_description}};0;300}}
 {set;!~platforms;[]}
 {if;{jget;~steamjson;body.{get;~id}.data.platforms.windows};==;true;
 {push;~platforms;Windows}
@@ -225,53 +217,55 @@ description:'{params}' not found.}};
 {set;!~deckjson;{jget;{request;https://www.protondb.com/proxy/steam/deck-verified?nAppID={get;~id}};body}}
 {switch;{jget;~deckjson;results.resolved_category};
 ["3"];
-{set;!~deckstatus;Verified ✅};
+{set;!~deckstatus;✅ Verified};
 ["2"];
-{set;!~deckstatus;Playable ⚠️};
+{set;!~deckstatus;⚠️ Playable};
 ["1"];
-{set;!~deckstatus;Unsupported ❌};
-{set;!~deckstatus;Unknown ❓}}
+{set;!~deckstatus;❌ Unsupported};
+{set;!~deckstatus;❓ Unknown}}
 {set;!~deckitems;[]}
 {foreach;~item;{jget;~deckjson;results.resolved_items};
 {set;!~itemtype}
 {set;!~itemtoken}
 {switch;{jget;~item;display_type};
 ["4"];
-{set;!~itemtype;✅};
+{set;!~itemtype;}
+{set;!~itemtoken;};
 ["3","1"];
-{set;!~itemtype;⚠️};
-["2"];
-{set;!~itemtype;❌};
-{set;!~itemtype;❓}}
+{set;!~itemtype;⚠️}
 {set;!~itemtoken;{trim;{join;{map;~l;{split;{jget;{split;{jget;~item;loc_token};_};2};};{if;{regextest;{get;~l};/[A-Z]/};{space}{get;~l};{get;~l}}};}}}
-{push;~deckitems;{get;~itemtype}{space}{capitalize;{get;~itemtoken};true}}
+{push;~deckitems;{get;~itemtype}{space}{replace;{capitalize;{get;~itemtoken};true};team{space}o{space}s;teamOS}};
+["2"];
+{set;!~itemtype;❌}
+{set;!~itemtoken;{trim;{join;{map;~l;{split;{jget;{split;{jget;~item;loc_token};_};2};};{if;{regextest;{get;~l};/[A-Z]/};{space}{get;~l};{get;~l}}};}}}
+{push;~deckitems;{get;~itemtype}{space}{replace;{capitalize;{get;~itemtoken};true};team{space}o{space}s;teamOS}};
+{set;!~itemtype;🗒️}
+{set;!~itemtoken;{trim;{join;{map;~l;{split;{jget;{split;{jget;~item;loc_token};_};2};};{if;{regextest;{get;~l};/[A-Z]/};{space}{get;~l};{get;~l}}};}}}
+{push;~deckitems;{get;~itemtype}{space}{replace;{capitalize;{get;~itemtoken};true};team{space}o{space}s;teamOS}}
 }
+}
+{//;genres}
+{set;!~genres;[]}
+{foreach;~genre;{jget;~steamjson;body.{get;~id}.data.genres};{push;~genres;{jget;~genre;description}}}
 {fallback;}
 {//;output results}
 {edit;{channelid};{get;~searchmsg};_delete;{embedbuild;
-author.name:ProtonDB.com · {jget;~steam;name} · AppID: {get;~id};
-author.icon_url:https://cdn.discordapp.com/icons/481706387278397440/f55e7ab1b69de54145c09803d49dbe51.webp;
-author.url:https://www.protondb.com/app/{get;~id};
+title:Steam - {jget;~steamjson;body.{get;~id}.data.name};
+url:https://store.steampowered.com/app/{get;~id};
 color:1B2838;
 image.url:https://steamcdn-a.akamaihd.net/steam/apps/{get;~id}/header.jpg;
-description:{get;~desc}{if;{length;{get;~desc}};>=;300;{space}[...]}
-__**[Summary of ProtonDB ratings](https://www.protondb.com/app/{get;~id})**__
-{if;{jget;~pjson;body.confidence};==;;No ratings found.;**Confidence**: {jget;~pjson;body.confidence}
-**Score**: {jget;~pjson;body.score}
-**Tier**: {jget;~pjson;body.tier}
-**Total Ratings**: {jget;~pjson;body.total}
-**Trending Tier**: {jget;~pjson;body.trendingTier}
-**Best Reported Tier**: {jget;~pjson;body.bestReportedTier}}
-__**[Steam Deck Status](https://steamdeck.com/en/verified)**__: {get;~deckstatus}{if;{length;{jget;~deckitems}};!=;0;{newline}{join;~deckitems;{newline}}}
-__**[Steam Store Page](https://store.steampowered.com/app/{get;~id})**__
-**OSes**: {get;~platforms}
-**Developer**: {jget;~steam;developer}
-**Publisher**: {jget;~steam;publisher}
-**Genre**: {regexreplace;{jget;~steam;genre};/,/g;,{space}}
-**Price**: {math;/;{jget;~steam;price};100} USD {if;{jget;~steam;discount};!=;0;({jget;~steam;discount}% discount)}
-**Steam Rating**: {numformat;{math;*;{math;/;{jget;~steam;positive};{math;+;{jget;~steam;positive};{jget;~steam;negative}}};100};2}% positive
+footer.text:{get;~desc}{if;{length;{get;~desc}};>=;300;{space}[...]};
+description:**OSes**: {get;~platforms}
+**Developer**: {join;{jget;~steamjson;body.{get;~id}.data.developers};,{space}}
+**Publisher**: {join;{jget;~steamjson;body.{get;~id}.data.publishers};,{space}}
+**Genre**: {join;{jget;~genres};,{space}}
+**Price**: {jget;~steamjson;body.{get;~id}.data.price_overview.final_formatted} ({jget;~steamjson;body.{get;~id}.data.price_overview.discount_percent}% discount)
+**Recommendations**: {jget;~steamjson;body.{get;~id}.data.recommendations.total}
 **Current Players**: {get;~cplayers}
-*https://www.protondb.com/app/{get;~id}*}}}
+**[ProtonDB Tier](https://www.protondb.com/app/{get;~id})**: {if;{jget;~pjson;body.confidence};==;;No ratings found.;{capitalize;{jget;~pjson;body.tier}} (ratings: {jget;~pjson;body.total}, score: {jget;~pjson;body.score}{if;{jget;~pjson;body.trendingTier};!=;{jget;~pjson;body.tier};,{space}trending towards: {jget;~pjson;body.trendingTier}})}
+**[Steam Deck Status](https://steamdeck.com/en/verified)**: {get;~deckstatus}{if;{length;{jget;~deckitems}};!=;0;{newline}{clean;{join;~deckitems;{newline}}}}
+}}
+}
 }
 
 {//;function to search youtube}
@@ -302,26 +296,26 @@ __**[Steam Store Page](https://store.steampowered.com/app/{get;~id})**__
 
 {//;detect arguments}
 {switch;{lower;{args;0}};
-["!aw","aw","archwiki"];{set;!~qsecolor;{func.distrocolors;arch}}{func.qse;site:wiki.archlinux.org {args;1;n}};
-["dw","debianwiki"];{set;!~qsecolor;{func.distrocolors;debian}}{func.qse;site:wiki.debian.org {args;1;n}};
-["fw","fedorawiki"];{set;!~qsecolor;{func.distrocolors;fedora}}{func.qse;site:fedoraproject.org/wiki {args;1;n}};
-["game","games"];{set;!~qsecolor;1673C0}{func.qse;site:mobygames.com {args;1;n}};
-["gw","gentoowiki"];{set;!~qsecolor;{func.distrocolors;gentoo}}{func.qse;site:wiki.gentoo.org {args;1;n}};
-["osw","opensusewiki"];{set;!~qsecolor;{func.distrocolors;opensuse}}{func.qse;site:en.opensuse.org {args;1;n}};
-["osd","opensusedocs"];{set;!~qsecolor;{func.distrocolors;opensuse}}{func.qse;site:doc.opensuse.org {args;1;n}};
-["uw","ubuntuwiki"];{set;!~qsecolor;{func.distrocolors;ubuntu}}{func.qse;site:wiki.ubuntu.com {args;1;n}};
+["!aw","aw","archwiki"];{set;!~ddgsecolor;{func.distrocolors;arch}}{func.ddgse;site:wiki.archlinux.org {args;1;n}};
+["dw","debianwiki"];{set;!~ddgsecolor;{func.distrocolors;debian}}{func.ddgse;site:wiki.debian.org {args;1;n}};
+["fw","fedorawiki"];{set;!~ddgsecolor;{func.distrocolors;fedora}}{func.ddgse;site:fedoraproject.org/wiki {args;1;n}};
+["game","games"];{set;!~ddgsecolor;1673C0}{func.ddgse;site:mobygames.com {args;1;n}};
+["gw","gentoowiki"];{set;!~ddgsecolor;{func.distrocolors;gentoo}}{func.ddgse;site:wiki.gentoo.org {args;1;n}};
+["osw","opensusewiki"];{set;!~ddgsecolor;{func.distrocolors;opensuse}}{func.ddgse;site:en.opensuse.org {args;1;n}};
+["osd","opensusedocs"];{set;!~ddgsecolor;{func.distrocolors;opensuse}}{func.ddgse;site:doc.opensuse.org {args;1;n}};
+["uw","ubuntuwiki"];{set;!~ddgsecolor;{func.distrocolors;ubuntu}}{func.ddgse;site:wiki.ubuntu.com {args;1;n}};
 ["urban","urbandictionary"];{func.urbandictionary;{args;1;n}};
 ["proton","steam","protondb"];{func.proton;{args;1;n}};
 ["def","define","dict","dictionary"];{func.datamuse-dictionary;{args;1;n}};
 ["youtube","yt"];{func.youtube;{args;1;n}};
-["lsst"];{set;!~qsecolor;skyblue}{func.qse;site:bash.cyberciti.biz/guide/ {args;1;n}};
-["abs"];{set;!~qsecolor;skyblue}{func.qse;site:tldp.org/LDP/abs/html/ {args;1;n}};
-["bbg"];{set;!~qsecolor;skyblue}{func.qse;site:tldp.org/LDP/Bash-Beginners-Guide/html/ {args;1;n}};
-["au","askubuntu"];{set;!~qsecolor;{func.distrocolors;ubuntu}}{func.qse;site:askubuntu.com {args;1;n}};
-["wiki","wikipedia"];{set;!~qsecolor;{func.dlcolors;blurple}}{func.qse;site:wikipedia.org {args;1;n}};
+["lsst"];{set;!~ddgsecolor;skyblue}{func.ddgse;site:bash.cyberciti.biz/guide/ {args;1;n}};
+["abs"];{set;!~ddgsecolor;skyblue}{func.ddgse;site:tldp.org/LDP/abs {args;1;n}};
+["bbg"];{set;!~ddgsecolor;skyblue}{func.ddgse;site:tldp.org/LDP/Bash-Beginners-Guide {args;1;n}};
+["au","askubuntu"];{set;!~ddgsecolor;{func.distrocolors;ubuntu}}{func.ddgse;site:askubuntu.com {args;1;n}};
+["wiki","wikipedia"];{set;!~ddgsecolor;{func.dlcolors;blurple}}{func.ddgse;site:wikipedia.org {args;1;n}};
 ["-h","help","--help"];{func.help};
 {if;{args};==;;{func.help}{return}}
-{func.qse;{args}}}
+{func.ddgse;{args}}}
 
 {//;TODO:
 image search

@@ -24,7 +24,7 @@
     "name": "Arch Linux",
     "supported": "Partial",
     "experience_level": "Advanced",
-    "recommended": "Yes",
+    "recommended": "No",
     "notes": "Arch Linux users are expected to solve basic problems on their own."
   },
   {
@@ -75,13 +75,6 @@
     "experience_level": "N/A",
     "recommended": "No",
     "notes": "BOSS Linux is a Linux distro created by CDAC, part of the Indian Government"
-  },
-  {
-    "name": "CentOS",
-    "supported": "Yes",
-    "experience_level": "Advanced",
-    "recommended": "No",
-    "notes": null
   },
   {
     "name": "CentOS Stream",
@@ -172,7 +165,7 @@
     "supported": "Yes",
     "experience_level": "Intermediate",
     "recommended": "No",
-    "notes": "Fedora Spins are supported, but are low quality compared to Fedora itself"
+    "notes": "Fedora Spins are supported, but may be low quality compared to Fedora itself"
   },
   {
     "name": "Feren OS",
@@ -180,13 +173,6 @@
     "experience_level": "N/A",
     "recommended": "No",
     "notes": null
-  },
-  {
-    "name": "GalliumOS",
-    "supported": "Yes",
-    "experience_level": "Intermediate",
-    "recommended": "No",
-    "notes": "GalliumOS is unmaintained, and is only meant for chromebooks."
   },
   {
     "name": "Garuda Linux",
@@ -339,7 +325,7 @@
     "name": "openSUSE Tumbleweed",
     "supported": "Partial",
     "experience_level": "Advanced",
-    "recommended": "Yes",
+    "recommended": "No",
     "notes": "openSUSE Tumbleweed users are expected to solve basic problems on their own."
   },
   {
@@ -424,7 +410,7 @@
     "supported": "Yes",
     "experience_level": "Advanced",
     "recommended": "No",
-    "notes": null
+    "notes": "This includes distributions like AlmaLinux and Rocky Linux that are binary-compatible with RHEL."
   },
   {
     "name": "Slackware",
@@ -469,9 +455,9 @@
     "notes": null
   },
   {
-    "name": "Ubuntu Cinnamon",
-    "supported": "No",
-    "experience_level": "N/A",
+    "name": "Ubuntu Cinnamon LTS",
+    "supported": "Yes",
+    "experience_level": "Beginner",
     "recommended": "No",
     "notes": null
   },
@@ -486,7 +472,7 @@
     "name": "Ubuntu LTS",
     "supported": "Yes",
     "experience_level": "Beginner",
-    "recommended": "No",
+    "recommended": "Yes",
     "notes": null
   },
   {
@@ -501,6 +487,13 @@
     "supported": "No",
     "experience_level": "Intermediate",
     "recommended": "No",
+    "notes": null
+  },
+  {
+    "name": "Ubuntu Server LTS",
+    "supported": "Yes",
+    "experience_level": "Intermediate",
+    "recommended": "Yes",
     "notes": null
   },
   {

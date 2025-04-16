@@ -1,6 +1,10 @@
 {
     "commands": [
         {
+            "name": "antiraid",
+            "file_path": "antiraid.bbtag"
+        },
+        {
             "name": "ask",
             "file_path": "ask.bbtag"
         },
@@ -13,8 +17,16 @@
             "file_path": "captcha.bbtag"
         },
         {
+            "name": "chat",
+            "file_path": "chat.bbtag"
+        },
+        {
             "name": "cht.sh",
             "file_path": "chtsh.bbtag"
+        },
+        {
+            "name": "cron",
+            "file_path": "cron.bbtag"
         },
         {
             "name": "enter",
@@ -61,6 +73,10 @@
             "file_path": "pastebin.bbtag"
         },
         {
+            "name": "pokemon",
+            "file_path": "pokemon.bbtag"
+        },
+        {
             "name": "poll",
             "file_path": "poll.bbtag"
         },
@@ -83,6 +99,10 @@
         {
             "name": "rules",
             "file_path": "rules.bbtag"
+        },
+        {
+            "name": "run",
+            "file_path": "run.bbtag"
         },
         {
             "name": "se",
@@ -123,6 +143,10 @@
         {
             "name": "whmodlog",
             "file_path": "whmodlog.bbtag"
+        },
+        {
+            "name": "uchat",
+            "file_path": "youchat.bbtag"
         }
     ]
 }

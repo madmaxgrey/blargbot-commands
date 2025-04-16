@@ -1,0 +1,78 @@
+{//;inject functions}
+{inject;{get;_gitcmd.functions}}
+
+{//;setup help embed}
+{set;!~helpembed;{embedbuild;
+author.name:{guildname};
+author.icon_url:{guildicon};
+color:{func.dlcolors;yellow};
+title:Help for quote;
+fields.name:Flags;
+fields.value:`-c`: Channel to fetch message from if not current channel.
+
+__**Arguments**__:;
+fields.inline:false;
+fields.name:{prefix}quote <messageID>;
+fields.value:Quotes a message using message forwarding.  `messageID` is the ID of the message to quote.;
+}}
+
+{//;output help}
+{if;{logic;||;
+{bool;{flag;_};==;help};
+{bool;{flag;_};==;{null}}};
+{if;{commandname};==;quote;
+{embed;{jget;~helpembed}};
+{jget;~helpembed}
+}
+{return;false}
+}
+
+{//;fallback to null}
+{fallback;}
+
+{//;set message id}
+{if;{flag;_};==;{null};
+{set;!~msgid;{messagereply}};
+{set;!~msgid;{flag;_}}
+}
+
+{//;set channel id}
+{if;{flag;c};==;{null};
+{set;!~chanid;{channelid}};
+{set;!~chanid;{channelid;{flag;c}}}
+}
+
+{//;check if message exists}
+{if;{messagetime;{get;~chanid};{get;~msgid}};==;{null};
+{output;{embed;{embedbuild;
+color:{func.dlcolors;red};
+title:Quote Error;
+description: No message found.;
+}}}
+{return}
+}
+
+{//;setup reference message JSON}
+{set;!~msg;{j;{"message_reference":{"type":1}}}}
+{jset;~msg;content;{null};c}
+{jset;~msg;message_reference.channel_id;{get;~chanid};c}
+{jset;~msg;message_reference.message_id;{get;~msgid};c}
+{jset;~msg;message_reference.guild_id;{guildid};c}
+{jset;~msg;message_snapshots.0.mentions;[];c}
+{jset;~msg;message_snapshots.0.mention_roles;[];c}
+{set;!~msg;{jclean;{jget;~msg}}}
+
+{//;reset fallback to show potential errors}
+{fallback}
+
+{//;send quote as message forward}
+{set;!~req;{exec;dapi;POST;/channels/{channelid}/messages;{jget;~msg}}}
+
+{//;check req status}
+{if;{jget;~req;status};!=;200;
+{output;{embed;{embedbuild;
+color:{func.dlcolors;red};
+title:Quote Error;
+description: {get;~req};
+}}}
+}

@@ -2,10 +2,24 @@
 {inject;{get;_gitcmd.functions}}
 
 {//;help function}
-{function;help;{embed;{embedbuild;
+{function;help;{set;!~thelp;{embedbuild;
+author.name:{guildname};
+author.icon_url:{guildicon};
 title:Help for topic;
-color:{func.dlcolors;yellow};
-description:Get the topic for a channel.;}}
+color:{func.dlcolors;brightyellow};
+description:__**Arguments**__:;
+fields.name:{prefix}topic;
+fields.value:Get the topic for the current channel.;
+fields.inline:false;
+fields.name:{prefix}topic <channel>;
+fields.value:Get the topic for the given `channel`.;
+fields.inline:false;
+}}
+{//;only output json if commandname is help}
+{if;{commandname};==;help;
+{jget;~thelp};
+{embed;{jget;~thelp}}
+}
 }
 
 {//;check prefix}
